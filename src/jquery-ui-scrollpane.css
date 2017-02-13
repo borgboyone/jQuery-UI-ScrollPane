@@ -1,0 +1,124 @@
+.ui-helper-hidden {
+	display: none !important;
+}
+.ui-scrollpane-fullwidth {
+	width: 100%;
+}
+.ui-scrollpane-autoheight {
+	height: auto;
+}
+.ui-scrollpane-scrollbar-vertical-track {
+	width: 100%;
+	position: relative;
+}
+.ui-scrollpane-scrollbar-horizontal-track {
+	height: 100%;
+	position: relative;
+}
+.ui-scrollpane-scrollbar-vertical-track-scrollhandle {
+	position: absolute;
+	width: 100%;
+	left: 0;
+	top: 0;
+}
+.ui-scrollpane-scrollbar-horizontal-track-scrollhandle {
+	position: absolute;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
+
+.ui-scrollbar.ui-scrollbar-vertical, .ui-scrollpane-scrollbar-vertical {
+	display: flex;
+	flex-flow: column nowrap;
+}
+.ui-scrollbar.ui-scrollbar-horizontal,  .ui-scrollpane-scrollbar-horizontal {
+	display: flex;
+	flex-flow: row nowrap;
+}
+.ui-scrollbar-arrow, .ui-scrollpane-scrollbar-vertical-arrow-start {
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+.ui-scrollpane-scrollbar-vertical-arrow-end {
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+.ui-scrollbar-track, .ui-scrollpane-scrollbar-vertical-track,  .ui-scrollpane-scrollbar-horizontal-track {
+	flex: 1 1 auto;
+	position: relative;
+}
+.ui-scrollbar-track-handle {
+	position: absolute;
+}
+.ui-scrollbar.ui-scrollbar-vertical .ui-scrollbar-track-handle {
+	width: 100%;
+	left: 0;
+}
+.ui-scrollbar.ui-scrollbar-horizontal .ui-scrollbar-track-handle {
+	height: 100%;
+	top: 0;
+}
+.ui-scrollbar.ui-state-disabled .ui-scrollbar-track-handle {
+	display: none;
+}
+.ui-scrollbar.ui-scrollbar-arrows-ends .ui-scrollbar-arrow-start {
+	order: 1;
+}
+.ui-scrollbar.ui-scrollbar-arrows-ends .ui-scrollbar-track {
+	order: 2;
+}
+.ui-scrollbar.ui-scrollbar-arrows-ends .ui-scrollbar-vertical-arrow-end {
+	order: 3;
+}
+.ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar-arrow-start {
+	order: 1;
+}
+.ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar-track {
+	order: 3;
+}
+.ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar-vertical-arrow-end {
+	order: 2;
+}
+.ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-arrow-start {
+	order: 2;
+}
+.ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-track {
+	order: 1;
+}
+.ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-vertical-arrow-end {
+	order: 3;
+}
+
+.ui-scrollbar-arrow {
+	width: 18px;
+	height: 18px;
+	background-color: #dde;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.ui-scrollbar-arrow.ui-state-disabled {
+	color: #888;
+}
+.ui-scrollbar-arrow:not(.ui-state-disabled):hover {
+	text-shadow: 2px 2px 4px #FFF;
+	background-color: #FFF;
+}
+.ui-scrollbar .ui-icon {
+	margin: 0;
+}
+.ui-scrollpane-scrollbar-vertical {
+	width: 18px;
+}
+.ui-scrollpane-scrollbar-horizontal {
+	height: 18px;
+}
+.ui-scrollpane-scrollbar-vertical-track, .ui-scrollpane-scrollbar-horizontal-track{
+	background: transparent;
+}
+.ui-scrollpane-scrollbar-vertical-track-scrollhandle, .ui-scrollpane-scrollbar-horizontal-track-scrollhandle {
+	background-color: rgb(246, 241, 221);
+	border-radius: 10px;
+	box-shadow: inset -4px -4px 8px -6px #666, inset 4px 4px 8px -5px #FFF;
+}
