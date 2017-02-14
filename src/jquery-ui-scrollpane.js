@@ -26,7 +26,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 	options: {
 		maintainInitialScrollPosition: true,
 		innerPaneClasses: 'ui-scrollpane-fullwidth ui-scrollPane-autoheight',
-		events: ['mouse', 'wheel'], // string or array of 'mouse', 'wheel', 'touch', 'keyboard'
+		events: ['mouse', 'wheel', 'keyboard'], // string or array of 'mouse', 'wheel', 'touch', 'keyboard'
 		animate: true,
 		scroll: undefined, //callback function for scroll events
 		wheelStep: 0.2,
@@ -70,6 +70,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 		// store element property based styles here for recovery in destroy
 		this.oldPosition = $outerPanel.prop('style')['position'] ? $outerPanel.prop('style')['position'] : '';
 		this.oldOverflow = $outerPanel.prop('style')['overflow'] ? $outerPanel.prop('style')['overflow'] : '';
+		this.oldTabIndex = $outerPanel.attr('tabindex');
 
 		$outerPanel
 			.wrapInner('<div class="ui-scrollpane-wrapper" style="position: absolute; overflow: hidden; width: ' + this.outerPanelWidth + 'px; height: ' + this.outerPanelHeight + 'px;"><div class="ui-scrollpane-inner ui-scrollable-area ' + this.options.innerPaneClasses + '" style="position: absolute;">')
@@ -231,9 +232,6 @@ var scrollPane = $.widget('aw.scrollPane', {
 		$outerPanel.find('.ui-scrollpane-scrollbar-vertical-track-scrollhandle').draggable({
 			axis: 'y',
 			containment: $outerPanel.find('.ui-scrollpane-scrollbar-vertical-track'),
-			start: function(event, ui) {
-				$(this).data('ui-draggable').scrollParent = $outerPanel.find('.ui-scrollpane-scrollbar-vertical');
-			},
 			drag: function(event, ui) {
 				var wrapperHeight = $wrapper.outerHeight(),
 					innerPanelHeight = $innerPanel.outerHeight(),
@@ -242,6 +240,9 @@ var scrollPane = $.widget('aw.scrollPane', {
 					delta = ui.position.top == 0 ? 0 : (ui.position.top / (trackHeight - scrollHandleHeight));
 
 					that._verticalPosition(delta * (innerPanelHeight - wrapperHeight), event);
+			},
+			stop: function() {
+				$outerPanel.focus();
 			}
 		});
 		this._on($outerPanel.find('.ui-scrollpane-scrollbar-horizontal-track'), {
@@ -323,11 +324,15 @@ var scrollPane = $.widget('aw.scrollPane', {
 					delta = ui.position.left == 0 ? 0 : (ui.position.left / (trackWidth - scrollHandleWidth));
 
 					that._horizontalPosition(delta * (innerPanelWidth - wrapperWidth), event);
+			},
+			stop: function() {
+				$outerPanel.focus();
 			}
 		});
 		this._on($wrapper, {
 			'mousewheel': function(event, delta, deltaX, deltaY) {
 				// FIXME: add check for delta, deltaX, deltaY, if (deltaY != 0 || delta != 0) delta = deltaY == 0 ? delta : deltaY;
+				// Check for stopPropagation if bounds aren't obtained
 				var position;
 				if (event.deltaFactor) {
 					position = -$innerPanel.position().top + (-deltaY * event.deltaFactor);
@@ -337,13 +342,95 @@ var scrollPane = $.widget('aw.scrollPane', {
 				this._verticalPosition(position, event);
 			}
 		});
-		// CONSIDER: whole scrollbar
+		// CONSIDER: whole scrollpane
 		this._on($outerPanel.find('.ui-scrollpane-scrollbar-vertical-track'), {
 			'mousewheel': function (event, delta, deltaX, deltaY) {
 				event.stopPropagation();
 				// TODO: save as regular mousewheel except force deltaX to 0
 			}
 		});
+	if (($.isArray(this.options.events) && (this.options.events.indexOf('keyboard') !== -1)) || this.options.events == 'keyboard') {
+		if (typeof this.oldTabIndex === 'undefined') $outerPanel.attr('tabindex', -1);
+		var keyHandler = function(event) {
+			if (this.verticalScrollBarVisible) {
+				switch(event.keyCode) {
+					case $.ui.keyCode.PAGE_DOWN:
+						if (this.currentVerticalScrollPosition !== 1) {
+							var wrapperHeight = $wrapper.outerHeight(),
+								delta = wrapperHeight * this.options.verticalScrollBar.pageStep;
+							this._verticalPosition(-$innerPanel.position().top + delta, event);
+							return true;
+						}
+						break;
+					case $.ui.keyCode.DOWN:
+						if (this.currentVerticalScrollPosition !== 1) {
+							var wrapperHeight = $wrapper.outerHeight(),
+								delta = wrapperHeight * that.options.verticalScrollBar.arrowStep;
+							this._verticalPosition(-$innerPanel.position().top + delta, event);
+							return true;
+						}
+						break;
+					case $.ui.keyCode.UP:
+						if (this.currentVerticalScrollPosition !== 0) {
+							var wrapperHeight = $wrapper.outerHeight(),
+								delta = wrapperHeight * that.options.verticalScrollBar.arrowStep;
+							this._verticalPosition(-$innerPanel.position().top - delta, event);
+							return true;
+						}
+						break;
+					case $.ui.keyCode.PAGE_UP:
+						if (this.currentVerticalScrollPosition !== 0) {
+							var wrapperHeight = $wrapper.outerHeight(),
+								delta = wrapperHeight * this.options.verticalScrollBar.pageStep;
+							this._verticalPosition(-$innerPanel.position().top - delta, event);
+							return true;
+						}
+						break;
+					case $.ui.keyCode.HOME:
+						if (this.currentVerticalScrollPosition !== 0) {
+							this._verticalPosition(0, event);
+							return true;
+						}
+						break;
+					case $.ui.keyCode.END:
+						if (this.currentVerticalScrollPosition !== 1) {
+							this._verticalPosition($innerPanel.outerHeight() - $wrapper.height(), event);
+							return true;
+						}
+						break;
+				}
+			}
+			if (this.horizontalScrollBarVisible) {
+				switch(event.keyCode) {
+					case $.ui.keyCode.LEFT:
+						if (this.currentHorizontalScrollPosition !== 0) {
+							var wrapperWidth = $wrapper.outerWidth(),
+								delta = wrapperWidth * that.options.horizontalScrollBar.arrowStep;
+							this._horizontalPosition(-$innerPanel.position().left - delta, event);
+							return true;
+						}
+						break;
+					case $.ui.keyCode.RIGHT:
+						if (this.currentHorizontalScrollPosition !== 1) {
+							var wrapperWidth = $wrapper.outerWidth(),
+								delta = wrapperWidth * that.options.horizontalScrollBar.arrowStep;
+							this._horizontalPosition(-$innerPanel.position().left + delta, event);
+							return true;
+						}
+						break;
+				}
+			}
+			return false;
+		};
+		this._on($outerPanel, {
+			'keydown':function (event) {
+				if (keyHandler.call(this, event)) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}
+		});
+	} // keyboard events
 	},
 	_verticalPosition: function(position, event) {
 		// must have vertical scroll bar showing and FIXME: active
@@ -546,6 +633,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 	},
 	_destroy: function() {
 		this.element
+			.attr('tabindex', this.oldTabIndex)
 			.removeData('ui-scrollable')
 			.css({'overflow': this.oldOverflow, 'position': this.oldPosition})
 			.removeClass('ui-scrollpane ui-scrollable')

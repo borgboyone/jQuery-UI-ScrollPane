@@ -22,7 +22,7 @@ Options
 ###Scrollpane Options
 -	`maintainInitialScrollPosition`: When initializing the scrollpane, keep the current scroll position. (default: true)
 -	`innerPaneClasses`: Classes to add to the inner scrollable area. (default: 'ui-scrollpane-fullwidth ui-scrollPane-autoheight')
--	`events`: A string or array specifing the event handlers that should be bound to the scrollpane.  Acceptable values are 'mouse', 'wheel', 'keywoard', and 'touch'. (default: ['mouse', 'wheel'])
+-	`events`: A string or array specifing the event handlers that should be bound to the scrollpane.  Acceptable values are 'mouse', 'wheel', 'keywoard', and 'touch'. (default: ['mouse', 'wheel', 'keyboard'])
 -	`animate`: Animate scrolling of the viewable area when triggered by the scrollbar(s). (default: true)
 -	`scroll`: Callback function for scroll events (default: undefined)
 -	`wheelStep`: Percentage of viewport to scroll the targeted axis if not passed in the event by the OS (default: 0.2)
@@ -53,14 +53,13 @@ ToDo
 ----
 You heard it here first folks.  Not everything is finished.
 -	Mousewheel on vertical scrollbar
--	Add keyboard support (via scrollbar widget creation preferably)
 -	Add touchscreen support (testing of project in actual setting)
 -	Add full visibility and always hidden support for scrollbars
 -	Add options validation
 -	Kill padding as appropriate, transfer to inner or user should apply with innerClasses?
 -	Verify border functionality
 -	Technically box-shadow insets should be transferred but that's getting to be a little much
-- CONSIDER: Honoring the ScrollBar position option
+-	CONSIDER: Honoring the ScrollBar position option
 -	CONSIDER: Userspace/namespace for classes (so instead of "ui-", you would have "aw-")
 
 License
