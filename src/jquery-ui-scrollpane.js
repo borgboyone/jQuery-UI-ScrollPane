@@ -333,6 +333,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 			'mousewheel': function(event, delta, deltaX, deltaY) {
 				// FIXME: add check for delta, deltaX, deltaY, if (deltaY != 0 || delta != 0) delta = deltaY == 0 ? delta : deltaY;
 				// Check for stopPropagation if bounds aren't obtained
+				// FIXME: if scroll does occur, stopPropagation on event, otherwise allow to bubble up
 				var position;
 				if (event.deltaFactor) {
 					position = -$innerPanel.position().top + (-deltaY * event.deltaFactor);
