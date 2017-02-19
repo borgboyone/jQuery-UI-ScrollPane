@@ -94,66 +94,66 @@
 		scrollHeight: function() {}
 	});
 
-	if ($.ui.scrollSortable) {
-	$.widget( "aw.scrollSortable", $.aw.scrollSortable, {
-		_scroll: function( event ) {
-			var o = this.options,
-				scrolled = { top: 0, left: 0 };
+	if ($.aw.scrollSortable) {
+		$.widget( "aw.scrollSortable", $.aw.scrollSortable, {
+			_scroll: function( event ) {
+				var o = this.options,
+					scrolled = { top: 0, left: 0 };
 
-			if ( this.scrollParent[ 0 ] !== this.document[ 0 ] &&
-					this.scrollParent[ 0 ].tagName !== "HTML" ) {
+				if ( this.scrollParent[ 0 ] !== this.document[ 0 ] &&
+						this.scrollParent[ 0 ].tagName !== "HTML" ) {
 
-				if ( ( this.overflowOffset.top + this.scrollParent.outerHeight() ) -
-						event.pageY < o.scrollSensitivity ) {
-					scrolled.top = this.scrollParent.scrollTop();
-					this.scrollParent.scrollTop(scrolled.top + o.scrollSpeed);
-					scrolled.top -= this.scrollParent.scrollTop();
-				} else if ( event.pageY - this.overflowOffset.top < o.scrollSensitivity ) {
-					scrolled.top = this.scrollParent.scrollTop();
-					this.scrollParent.scrollTop(scrolled.top - o.scrollSpeed);
-					scrolled.top += -this.scrollParent.scrollTop();
+					if ( ( this.overflowOffset.top + this.scrollParent.outerHeight() ) -
+							event.pageY < o.scrollSensitivity ) {
+						scrolled.top = this.scrollParent.scrollTop();
+						this.scrollParent.scrollTop(scrolled.top + o.scrollSpeed);
+						scrolled.top -= this.scrollParent.scrollTop();
+					} else if ( event.pageY - this.overflowOffset.top < o.scrollSensitivity ) {
+						scrolled.top = this.scrollParent.scrollTop();
+						this.scrollParent.scrollTop(scrolled.top - o.scrollSpeed);
+						scrolled.top += -this.scrollParent.scrollTop();
+					}
+
+					if ( ( this.overflowOffset.left + this.scrollParent.outerWidth() ) -
+							event.pageX < o.scrollSensitivity ) {
+						scrolled.left = this.scrollParent.scrollLeft();
+						this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() + o.scrollSpeed);
+						scrolled.left -= this.scrollParent.scrollLeft();
+					} else if ( event.pageX - this.overflowOffset.left < o.scrollSensitivity ) {
+						scrolled.left = this.scrollParent.scrollLeft();
+						this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() - o.scrollSpeed);
+						scrolled.left += -this.scrollParent.scrollLeft();
+					}
+
+				} else {
+
+					if ( event.pageY - this.document.scrollTop() < o.scrollSensitivity ) {
+						scrolled.top = this.document.scrollTop();
+						this.document.scrollTop( scrolled.top - o.scrollSpeed );
+						scrolled.top += -this.document.scrollTop();
+					} else if ( this.window.height() - ( event.pageY - this.document.scrollTop() ) <
+							o.scrollSensitivity ) {
+						scrolled.top = this.document.scrollTop();
+						this.document.scrollTop( scrolled.top + o.scrollSpeed );
+						scrolled.top -= this.document.scrollTop();
+					}
+
+					if ( event.pageX - this.document.scrollLeft() < o.scrollSensitivity ) {
+						scrolled.left = this.document.scrollLeft();
+						this.document.scrollLeft( scrolled.left - o.scrollSpeed );
+						scrolled.left += -this.document.scrollLeft();
+					} else if ( this.window.width() - ( event.pageX - this.document.scrollLeft() ) <
+							o.scrollSensitivity ) {
+						scrolled.left = this.document.scrollLeft();
+						this.document.scrollLeft( scrolled.left + o.scrollSpeed );
+						scrolled.left -= this.document.scrollLeft();
+					}
+
 				}
 
-				if ( ( this.overflowOffset.left + this.scrollParent.outerWidth() ) -
-						event.pageX < o.scrollSensitivity ) {
-					scrolled.left = this.scrollParent.scrollLeft();
-					this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() + o.scrollSpeed);
-					scrolled.left -= this.scrollParent.scrollLeft();
-				} else if ( event.pageX - this.overflowOffset.left < o.scrollSensitivity ) {
-					scrolled.left = this.scrollParent.scrollLeft();
-					this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() - o.scrollSpeed);
-					scrolled.left += -this.scrollParent.scrollLeft();
-				}
-
-			} else {
-
-				if ( event.pageY - this.document.scrollTop() < o.scrollSensitivity ) {
-					scrolled.top = this.document.scrollTop();
-					this.document.scrollTop( scrolled.top - o.scrollSpeed );
-					scrolled.top += -this.document.scrollTop();
-				} else if ( this.window.height() - ( event.pageY - this.document.scrollTop() ) <
-						o.scrollSensitivity ) {
-					scrolled.top = this.document.scrollTop();
-					this.document.scrollTop( scrolled.top + o.scrollSpeed );
-					scrolled.top -= this.document.scrollTop();
-				}
-
-				if ( event.pageX - this.document.scrollLeft() < o.scrollSensitivity ) {
-					scrolled.left = this.document.scrollLeft();
-					this.document.scrollLeft( scrolled.left - o.scrollSpeed );
-					scrolled.left += -this.document.scrollLeft();
-				} else if ( this.window.width() - ( event.pageX - this.document.scrollLeft() ) <
-						o.scrollSensitivity ) {
-					scrolled.left = this.document.scrollLeft();
-					this.document.scrollLeft( scrolled.left + o.scrollSpeed );
-					scrolled.left -= this.document.scrollLeft();
-				}
-
+				return scrolled === false ||
+					( ( scrolled.left === 0 ) && ( scrolled.top === 0 ) ) ? false : scrolled;
 			}
-
-			return scrolled === false ||
-				( ( scrolled.left === 0 ) && ( scrolled.top === 0 ) ) ? false : scrolled;
-		}
-	});
+		});
 	}
 })(jQuery);

@@ -518,16 +518,16 @@ var scrollPane = $.widget('aw.scrollPane', {
 
 		if (outerChanged) {
 			// update wrapper size first
-			var wrapperWidth = outerPanelWidth - this.isShowingVerticalScrollBar() ? widthofit : 0,
-				wrapperHeight = outerPanelHeight - this.isShowingHorizontalScrollBar() ? heightofit : 0;
-			$outerPanel.find('jquery-ui-scrollpane-wrapper').css({'width': wrappWidth, 'height': wrapperHeight});
+			var wrapperWidth = outerPanelWidth - (this.verticalScrollBarVisible ? $outerPanel.find('.ui-scrollpane-scrollbar-vertical').outerWidth() : 0),
+				wrapperHeight = outerPanelHeight - (this.horizontalScrollBarVisible ? $outerPanel.find('.ui-scrollpane-scrollbar-horizontal').outerHeight() : 0);
+			$outerPanel.find('jquery-ui-scrollpane-wrapper').css({'width': wrapperWidth, 'height': wrapperHeight});
 			// CONSIDER: might have to create an immediate delay function to call the rest of this to ensure propagation of the width and height change on the wrapper
 		}
 
 		// get innerPanel sizes after updating wrapper
 		innerPanelWidth = $innerPanel.outerWidth(),
 		innerPanelHeight = $innerPanel.outerHeight(),
-		innerChanged = (this.innerPanelWidth !== innerPanelWidth) || (this.innerPaneHeight !== innerPaneHeight);
+		innerChanged = (this.innerPanelWidth !== innerPanelWidth) || (this.innerPanelHeight !== innerPanelHeight);
 		if (outerChanged || innerChanged) {
 			// save changed values (outerPanel here) or potentially do it in _update with innerPanel
 			this.outerPanelWidth = outerPanelWidth;
