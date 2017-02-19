@@ -95,7 +95,7 @@
 	});
 
 	if ($.ui.scrollSortable) {
-	$.widget( "ui.scrollSortable", $.ui.scrollSortable, {
+	$.widget( "aw.scrollSortable", $.aw.scrollSortable, {
 		_scroll: function( event ) {
 			var o = this.options,
 				scrolled = { top: 0, left: 0 };
@@ -152,7 +152,7 @@
 			}
 
 			return scrolled === false ||
-				((scrolled.left == 0) && (scrolled.top == 0)) ? false : scrolled;
+				( ( scrolled.left === 0 ) && ( scrolled.top === 0 ) ) ? false : scrolled;
 		}
 	});
 	}

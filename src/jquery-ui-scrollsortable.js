@@ -1,25 +1,8 @@
-/*!
- * jQuery UI ScrollSortable 1.0.0
- * http://jqueryui.com
- *
- * Copyright jQuery Foundation and other contributors
- * Released under the MIT license.
- * http://jquery.org/license
- */
-
 ( function( factory ) {
 	if ( typeof define === "function" && define.amd ) {
 
 		// AMD. Register as an anonymous module.
-		define( [
-			"jquery",
-			"./mouse",
-			"../data",
-			"../ie",
-			"../scroll-parent",
-			"../version",
-			"../widget"
-		], factory );
+		define( [ "jquery" ], factory );
 	} else {
 
 		// Browser globals
@@ -27,7 +10,18 @@
 	}
 }( function( $ ) {
 
-return $.widget( "ui.scrollSortable", $.ui.mouse, {
+/*!
+ * jQuery UI ScrollSortable 1.0.0
+ * https://github.com/borgboyone/jQuery-UI-ScrollPane
+ *
+ * Copyright 2017 Anthony Wells
+ * Released under the MIT license.
+ * https://raw.githubusercontent.com/borgboyone/jQuery-UI-ScrollPane/master/LICENSE
+ *
+ * http://borgboyone.github.io/jQuery-UI-ScrollPane/
+ */
+
+return $.widget( "aw.scrollSortable", $.ui.mouse, {
 	version: "1.0.0",
 	widgetEventPrefix: "sort",
 	ready: false,
