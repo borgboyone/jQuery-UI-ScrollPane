@@ -46,8 +46,36 @@ Typical:
     $('#content .article').scrollpane();
 ```
 
+Ultimate No Tears (via MarcJ's [CSS Element Queries](http://marcj.github.io/css-element-queries/) plugin):
+```js
+	$('#content .article').scrollpane();
+	new new ResizeSensor($('#content .article').get(0), function() { $('#content .article').scrollpane('refresh'); });
+	new new ResizeSensor($('#content .article .ui-scrollpane-inner').get(0), function() { $('#content .article').scrollpane('refresh'); });
+```
+
+Padding Transfer:
+```css
+	.my-padding {
+		padding: 2px 4px 6px 8px;
+	}
+```
+```js
+	$('#content .article').removeClass('my-padding').scrollpane({innerPaneClasses: 'my-padding'});
+	$('#content .article').scrollpane('destroy').addClass('my-padding');
+```
+
 Auxilliary
 ----------
+A fix-up version of the jQuery UI Sortable widget is provided that fixes (or at least strives to) all issues associated with scrolling and sorting.  This version will work in tandem with the ScrollPane provided you reference the Scroll Sortable plugin before the Scroll Pane.  This Scroll Sortable plugin takes all the same options as its counterpart but  is instantiated with .scrollSortable({...}) instead of .sortable({...}).
+
+The Scroll Pane plugin introduces the concept of a Scrollable widget by exporting itself as an instance of ui-scrollable and implementing functions defined in a mock Scrollable widget (ie. an interface).  Any widget can take on a scrollable nature in this way by implementing these functions:
+- scrollTop([value])
+- scrollLeft([value])
+- scrollWidth()
+- scrollHeight()
+- inScrollableArea(element or jQuery): Complex constructs can potentially have elements that are part of the widget's interface but are not actually a part of the scrollable DOM.  This allows functions such as scrollParent to treat these elements as separate from the Scrollable.
+
+The jQuery scrollParent, scrollTop and scrollLeft default functions are overridden to take advantage of the ui-scrollable implementation.  This permits users to include jQuery UI Draggable and similar components inside the scrollable area.  For the sake of completeness, jQuery functions are added for scrollWidth and scrollHeight and they also function with the Scroll Pane plugin (or any other widget that exports itself as a Scrollable instance).
 
 ToDo
 ----
@@ -56,11 +84,11 @@ You heard it here first folks.  Not everything is finished.
 -	Add touchscreen support (testing of project in actual setting)
 -	Add full visibility and always hidden support for scrollbars
 -	Add options validation
--	Kill padding as appropriate, transfer to inner or user should apply with innerClasses?
 -	Verify border functionality
 -	Technically box-shadow insets should be transferred but that's getting to be a little much
 -	CONSIDER: Honoring the ScrollBar position option
 -	CONSIDER: Userspace/namespace for classes (so instead of "ui-", you would have "aw-")
+-	REQUEST: Have scrollbars float over content and fade-in and/or slide-in on activity
 
 License
 -------
