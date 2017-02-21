@@ -28,7 +28,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 		innerPaneClasses: 'ui-scrollpane-fullwidth ui-scrollPane-autoheight',
 		events: ['mouse', 'wheel', 'keyboard'], // string or array of 'mouse', 'wheel', 'touch', 'keyboard'
 		animate: true,
-		scroll: undefined, //callback function for scroll events
+		scroll: null, //callback function for scroll events
 		wheelStep: 0.2,
 		verticalScrollBar: {
 			position: 'right',
@@ -777,61 +777,44 @@ var scrollPane = $.widget('aw.scrollPane', {
 		$.widget( "aw.scrollSortable", $.aw.scrollSortable, {
 			_scroll: function( event ) {
 				var o = this.options,
-					scrolled = { top: 0, left: 0 };
+					scrolled = false;
 
 				if ( this.scrollParent[ 0 ] !== this.document[ 0 ] &&
 						this.scrollParent[ 0 ].tagName !== "HTML" ) {
 
 					if ( ( this.overflowOffset.top + this.scrollParent.outerHeight() ) -
 							event.pageY < o.scrollSensitivity ) {
-						scrolled.top = this.scrollParent.scrollTop();
-						this.scrollParent.scrollTop(scrolled.top + o.scrollSpeed);
-						scrolled.top -= this.scrollParent.scrollTop();
+						scrolled = this.scrollParent.scrollTop(scrolled.top + o.scrollSpeed);
 					} else if ( event.pageY - this.overflowOffset.top < o.scrollSensitivity ) {
-						scrolled.top = this.scrollParent.scrollTop();
-						this.scrollParent.scrollTop(scrolled.top - o.scrollSpeed);
-						scrolled.top += -this.scrollParent.scrollTop();
+						scrolled = this.scrollParent.scrollTop(scrolled.top - o.scrollSpeed);
 					}
 
 					if ( ( this.overflowOffset.left + this.scrollParent.outerWidth() ) -
 							event.pageX < o.scrollSensitivity ) {
-						scrolled.left = this.scrollParent.scrollLeft();
-						this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() + o.scrollSpeed);
-						scrolled.left -= this.scrollParent.scrollLeft();
+						scrolled = this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() + o.scrollSpeed);
 					} else if ( event.pageX - this.overflowOffset.left < o.scrollSensitivity ) {
-						scrolled.left = this.scrollParent.scrollLeft();
-						this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() - o.scrollSpeed);
-						scrolled.left += -this.scrollParent.scrollLeft();
+						scrolled = this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() - o.scrollSpeed);
 					}
 
 				} else {
 
 					if ( event.pageY - this.document.scrollTop() < o.scrollSensitivity ) {
-						scrolled.top = this.document.scrollTop();
-						this.document.scrollTop( scrolled.top - o.scrollSpeed );
-						scrolled.top += -this.document.scrollTop();
+						scrolled = this.document.scrollTop( scrolled.top - o.scrollSpeed );
 					} else if ( this.window.height() - ( event.pageY - this.document.scrollTop() ) <
 							o.scrollSensitivity ) {
-						scrolled.top = this.document.scrollTop();
-						this.document.scrollTop( scrolled.top + o.scrollSpeed );
-						scrolled.top -= this.document.scrollTop();
+						scrolled = this.document.scrollTop( scrolled.top + o.scrollSpeed );
 					}
 
 					if ( event.pageX - this.document.scrollLeft() < o.scrollSensitivity ) {
-						scrolled.left = this.document.scrollLeft();
-						this.document.scrollLeft( scrolled.left - o.scrollSpeed );
-						scrolled.left += -this.document.scrollLeft();
+						scrolled = this.document.scrollLeft( scrolled.left - o.scrollSpeed );
 					} else if ( this.window.width() - ( event.pageX - this.document.scrollLeft() ) <
 							o.scrollSensitivity ) {
-						scrolled.left = this.document.scrollLeft();
-						this.document.scrollLeft( scrolled.left + o.scrollSpeed );
-						scrolled.left -= this.document.scrollLeft();
+						scrolled = this.document.scrollLeft( scrolled.left + o.scrollSpeed );
 					}
 
 				}
 
-				return scrolled === false ||
-					( ( scrolled.left === 0 ) && ( scrolled.top === 0 ) ) ? false : scrolled;
+				return scrolled;
 			}
 		});
 	}

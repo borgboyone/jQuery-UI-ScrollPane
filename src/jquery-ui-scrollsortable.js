@@ -339,67 +339,57 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 
 	_scroll: function( event ) {
 		var o = this.options,
-			scrolled = { top: 0, left: 0 };
+			scrolled = false;
 
 		if ( this.scrollParent[ 0 ] !== this.document[ 0 ] &&
 				this.scrollParent[ 0 ].tagName !== "HTML" ) {
 
 			if ( ( this.overflowOffset.top + this.scrollParent[ 0 ].offsetHeight ) -
 					event.pageY < o.scrollSensitivity ) {
-				scrolled.top = this.scrollParent[ 0 ].scrollTop;
-				this.scrollParent[ 0 ].scrollTop = scrolled.top + o.scrollSpeed;
-				scrolled.top -= this.scrollParent[ 0 ].scrollTop;
+				this.scrollParent[ 0 ].scrollTop =
+					scrolled = this.scrollParent[ 0 ].scrollTop + o.scrollSpeed;
 			} else if ( event.pageY - this.overflowOffset.top < o.scrollSensitivity ) {
-				scrolled.top = this.scrollParent[ 0 ].scrollTop;
-				this.scrollParent[ 0 ].scrollTop = scrolled.top - o.scrollSpeed;
-				scrolled.top += -this.scrollParent[ 0 ].scrollTop;
+				this.scrollParent[ 0 ].scrollTop =
+					scrolled = this.scrollParent[ 0 ].scrollTop - o.scrollSpeed;
 			}
 
 			if ( ( this.overflowOffset.left + this.scrollParent[ 0 ].offsetWidth ) -
 					event.pageX < o.scrollSensitivity ) {
-				scrolled.left = this.scrollParent[ 0 ].scrollLeft;
-				this.scrollParent[ 0 ].scrollLeft = scroll.left + o.scrollSpeed;
-				scrolled.left -= this.scrollParent[ 0 ].scrollLeft;
+				this.scrollParent[ 0 ].scrollLeft = scrolled =
+					this.scrollParent[ 0 ].scrollLeft + o.scrollSpeed;
 			} else if ( event.pageX - this.overflowOffset.left < o.scrollSensitivity ) {
-				scrolled.left = this.scrollParent[ 0 ].scrollLeft;
-				this.scrollParent[ 0 ].scrollLeft = scrolled.left - o.scrollSpeed;
-				scrolled.left = -this.scrollParent[ 0 ].scrollLeft;
+				this.scrollParent[ 0 ].scrollLeft = scrolled =
+					this.scrollParent[ 0 ].scrollLeft - o.scrollSpeed;
 			}
 
 		} else {
 
 			if ( event.pageY - this.document.scrollTop() < o.scrollSensitivity ) {
-				scrolled.top = this.document.scrollTop();
-				this.document.scrollTop( scrolled.top - o.scrollSpeed );
-				scrolled.top += -this.document.scrollTop();
+				scrolled = this.document.scrollTop( this.document.scrollTop() - o.scrollSpeed );
 			} else if ( this.window.height() - ( event.pageY - this.document.scrollTop() ) <
 					o.scrollSensitivity ) {
-				scrolled.top = this.document.scrollTop();
-				this.document.scrollTop( scrolled.top + o.scrollSpeed );
-				scrolled.top -= this.document.scrollTop();
+				scrolled = this.document.scrollTop( this.document.scrollTop() + o.scrollSpeed );
 			}
 
 			if ( event.pageX - this.document.scrollLeft() < o.scrollSensitivity ) {
-				scrolled.left = this.document.scrollLeft();
-				this.document.scrollLeft( scrolled.left - o.scrollSpeed );
-				scrolled.left += -this.document.scrollLeft();
+				scrolled = this.document.scrollLeft(
+					this.document.scrollLeft() - o.scrollSpeed
+				);
 			} else if ( this.window.width() - ( event.pageX - this.document.scrollLeft() ) <
 					o.scrollSensitivity ) {
-				scrolled.left = this.document.scrollLeft();
-				this.document.scrollLeft( scrolled.left + o.scrollSpeed );
-				scrolled.left -= this.document.scrollLeft();
+				scrolled = this.document.scrollLeft(
+					this.document.scrollLeft() + o.scrollSpeed
+				);
 			}
 
 		}
 
-		return scrolled === false ||
-			( ( scrolled.left === 0 ) && ( scrolled.top === 0 ) ) ? false : scrolled;
+		return scrolled;
 	},
 
 	_mouseDrag: function( event ) {
 		var i, item, itemElement, intersection,
-			o = this.options,
-			scrolled = false;
+			o = this.options;
 
 		//Compute the helpers position
 		this.position = this._generatePosition( event );
@@ -416,28 +406,25 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 		//Post events to containers
 		this._contactContainers( event );
 
-		if ( this.innermostContainer ) {
+		if ( this.innermostContainer !== null ) {
 
 			//Do scrolling
 			if ( o.scroll ) {
-				scrolled = this._scroll( event );
-				if ( scrolled !== false ) {
+				if ( this._scroll( event ) !== false ) {
 
-					//Update all absolute positions used in position checks
-					this.positionAbs.top -= scrolled.top;
-					this.positionAbs.left -= scrolled.left;
-					this.lastPositionAbs.top -= scrolled.top;
-					this.lastPositionAbs.left -= scrolled.left;
-					for ( i = this.items.length - 1; i >= 0; i-- ) {
-						this.items[ i ].top -= scrolled.top;
-						this.items[ i ].left -= scrolled.left;
-					}
+					//Update item positions used in position checks
+					this._refreshItemPositions( true );
 
 					if ( $.ui.ddmanager && !o.dropBehaviour ) {
 						$.ui.ddmanager.prepareOffsets( this, event );
 					}
 				}
 			}
+
+			this.dragDirection = {
+				vertical: this._getDragVerticalDirection(),
+				horizontal: this._getDragHorizontalDirection()
+			};
 
 			//Rearrange
 			for ( i = this.items.length - 1; i >= 0; i-- ) {
@@ -691,8 +678,8 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 			return false;
 		}
 
-		verticalDirection = this._getDragVerticalDirection();
-		horizontalDirection = this._getDragHorizontalDirection();
+		verticalDirection = this.dragDirection.vertical;
+		horizontalDirection = this.dragDirection.horizontal;
 
 		return this.floating ?
 			( ( horizontalDirection === "right" || verticalDirection === "down" ) ? 2 : 1 )
@@ -706,8 +693,8 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 				this.offset.click.top, item.top + ( item.height / 2 ), item.height ),
 			isOverRightHalf = this._isOverAxis( this.positionAbs.left +
 				this.offset.click.left, item.left + ( item.width / 2 ), item.width ),
-			verticalDirection = this._getDragVerticalDirection(),
-			horizontalDirection = this._getDragHorizontalDirection();
+			verticalDirection = this.dragDirection.vertical,
+			horizontalDirection = this.dragDirection.horizontal;
 
 		if ( this.floating && horizontalDirection ) {
 			return ( ( horizontalDirection === "right" && isOverRightHalf ) ||
@@ -849,26 +836,14 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 
 	},
 
-	refreshPositions: function( fast ) {
-
-		// Determine whether items are being displayed horizontally
-		this.floating = this.items.length ?
-			this.options.axis === "x" || this._isFloating( this.items[ 0 ].item ) :
-			false;
-
-		//This has to be redone because due to the item being moved out/into the offsetParent,
-		// the offsetParent's position will change
-		if ( this.offsetParent && this.helper ) {
-			this.offset.parent = this._getParentOffset();
-		}
-
+	_refreshItemPositions: function( fast ) {
 		var i, item, t, p;
 
 		for ( i = this.items.length - 1; i >= 0; i-- ) {
 			item = this.items[ i ];
 
 			//We ignore calculating positions of all connected containers when we're not over them
-			if ( item.instance !== this.currentContainer && this.currentContainer &&
+			if ( this.currentContainer && item.instance !== this.currentContainer &&
 					item.item[ 0 ] !== this.currentItem[ 0 ] ) {
 				continue;
 			}
@@ -886,6 +861,20 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 			item.left = p.left;
 			item.top = p.top;
 		}
+	},
+
+	refreshPositions: function( fast ) {
+
+		// Determine whether items are being displayed horizontally
+		this.floating = this.items.length ?
+			this.options.axis === "x" || this._isFloating( this.items[ 0 ].item ) :
+			false;
+
+		if ( this.innermostContainer !== null ) {
+			this._refreshItemPositions( fast );
+		}
+
+		var i, p;
 
 		if ( this.options.custom && this.options.custom.refreshContainers ) {
 			this.options.custom.refreshContainers.call( this );
@@ -1103,7 +1092,7 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 
 			//Update scrollParent
 			this.scrollParent = this.placeholder.scrollParent();
-			
+
 			//Update overflowOffset
 			if ( this.scrollParent[ 0 ] !== this.document[ 0 ] &&
 					this.scrollParent[ 0 ].tagName !== "HTML" ) {
