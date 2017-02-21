@@ -68,7 +68,7 @@
 .ui-scrollbar.ui-scrollbar-arrows-ends .ui-scrollbar-track {
 	order: 2;
 }
-.ui-scrollbar.ui-scrollbar-arrows-ends .ui-scrollbar-vertical-arrow-end {
+.ui-scrollbar.ui-scrollbar-arrows-ends .ui-scrollbar--arrow-end {
 	order: 3;
 }
 .ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar-arrow-start {
@@ -77,7 +77,7 @@
 .ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar-track {
 	order: 3;
 }
-.ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar-vertical-arrow-end {
+.ui-scrollbar.ui-scrollbar-arrows-start .ui-scrollbar--arrow-end {
 	order: 2;
 }
 .ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-arrow-start {
@@ -86,20 +86,22 @@
 .ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-track {
 	order: 1;
 }
-.ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-vertical-arrow-end {
+.ui-scrollbar.ui-scrollbar-arrows-end .ui-scrollbar-arrow-end {
 	order: 3;
 }
 
 .ui-scrollbar-arrow {
 	width: 18px;
 	height: 18px;
-	background-color: #dde;
+	background-color: rgb(246, 241, 221);
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
+	border-radius: 50%;
+	box-shadow: inset -4px -4px 8px -6px #666, inset 4px 4px 8px -5px #FFF;
 }
 .ui-scrollbar-arrow.ui-state-disabled {
-	color: #888;
+	background-color: #AAA;
 }
 .ui-scrollbar-arrow:not(.ui-state-disabled):hover {
 	text-shadow: 2px 2px 4px #FFF;
@@ -121,4 +123,8 @@
 	background-color: rgb(246, 241, 221);
 	border-radius: 10px;
 	box-shadow: inset -4px -4px 8px -6px #666, inset 4px 4px 8px -5px #FFF;
+	cursor: grab;
+}
+.ui-scrollpane-scrollbar-vertical-track-scrollhandle.ui-draggable-dragging {
+	cursor: grabbing;
 }

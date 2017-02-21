@@ -74,11 +74,11 @@ var scrollPane = $.widget('aw.scrollPane', {
 
 		$outerPanel
 			.wrapInner('<div class="ui-scrollpane-wrapper" style="position: absolute; overflow: hidden; width: ' + this.outerPanelWidth + 'px; height: ' + this.outerPanelHeight + 'px;"><div class="ui-scrollpane-inner ui-scrollable-area ' + this.options.innerPaneClasses + '" style="position: absolute;">')
-			.append('<div class="ui-scrollpane-scrollbar ui-scrollpane-scrollbar-vertical ui-scrollbar ui-scrollbar-vertical ui-helper-hidden" style="position: absolute;">' +
+			.append('<div class="ui-scrollpane-scrollbar ui-scrollpane-scrollbar-vertical ui-scrollbar ' + (this.options.verticalScrollBar.arrowAlignment == 'start' ? 'ui-scrollbar-arrows-start' : (this.options.verticalScrollBar.arrowAlignment == 'end' ? 'ui-scrollbar-arrows-end' : 'ui-scrollbar-arrows-ends')) + ' ui-scrollbar-vertical ui-helper-hidden" style="position: absolute;">' +
 				'<div class="ui-scrollpane-scrollbar-vertical-arrow-up ui-scrollbar-arrow ui-scrollbar-arrow-start' + (this.options.verticalScrollBar.showArrows == 'visible' ? '' : ' ui-helper-hidden') + '"><span class="' + this.options.verticalScrollBar.arrowClassIcons['start'] + '"></span></div>' +
 				'<div class="ui-scrollpane-scrollbar-vertical-track ui-scrollbar-track"><div class="ui-scrollpane-scrollbar-vertical-track-scrollhandle ui-scrollbar-scrollhandle"></div></div>' +
 				'<div class="ui-scrollpane-scrollbar-vertical-arrow-down ui-scrollbar-arrow ui-scrollbar-arrow-end' + (this.options.verticalScrollBar.showArrows == 'visible' ? '' : ' ui-helper-hidden') + '"><span class="' + this.options.verticalScrollBar.arrowClassIcons['end'] + '"></span></div></div>')
-			.append('<div class="ui-scrollpane-scrollbar ui-scrollpane-scrollbar-horizontal ui-scrollbar ui-scrollbar-horizontal ui-helper-hidden" style="position: absolute;">' +
+			.append('<div class="ui-scrollpane-scrollbar ui-scrollpane-scrollbar-horizontal ui-scrollbar ' + (this.options.horizontalScrollBar.arrowAlignment == 'start' ? 'ui-scrollbar-arrows-start' : (this.options.horizontalScrollBar.arrowAlignment == 'end' ? 'ui-scrollbar-arrows-end' : 'ui-scrollbar-arrows-ends')) + ' ui-scrollbar-horizontal ui-helper-hidden" style="position: absolute;">' +
 				'<div class="ui-scrollpane-scrollbar-horizontal-arrow-left ui-scrollbar-arrow ui-scrollbar-arrow-start' + (this.options.horizontalScrollBar.showArrows == 'visible' ? '' : ' ui-helper-hidden') + '"><span class="' + this.options.horizontalScrollBar.arrowClassIcons['start'] + '"></span></div>' +
 				'<div class="ui-scrollpane-scrollbar-horizontal-track ui-scrollbar-track"><div class="ui-scrollpane-scrollbar-horizontal-track-scrollhandle"></div></div>' +
 				'<div class="ui-scrollpane-scrollbar-horizontal-arrow-right ui-scrollbar-arrow ui-scrollbar-arrow-end' + (this.options.horizontalScrollBar.showArrows == 'visible' ? '' : ' ui-helper-hidden') + '"><span class="' + this.options.horizontalScrollBar.arrowClassIcons['end'] + '"></span></div></div>')
@@ -127,12 +127,12 @@ var scrollPane = $.widget('aw.scrollPane', {
 		return height;
 	},
 	_events: function() {
-		// FIXME: initialize per options
 		var $outerPanel = this.element,
 			$innerPanel = this.$innerPanel,
 			$wrapper = $outerPanel.find('> .ui-scrollpane-wrapper'),
 			that = this;
-
+// mouse start
+	if (($.isArray(this.options.events) && (this.options.events.indexOf('mouse') !== -1)) || this.options.events == 'mouse') {
 		this._on($outerPanel.find('.ui-scrollpane-scrollbar-vertical-track-scrollhandle, .ui-scrollpane-scrollbar-horizontal-track-scrollhandle'), {
 			click: function(event) {
 				event.preventDefault();
@@ -329,27 +329,62 @@ var scrollPane = $.widget('aw.scrollPane', {
 				$outerPanel.focus();
 			}
 		});
-		this._on($wrapper, {
-			'mousewheel': function(event, delta, deltaX, deltaY) {
-				// FIXME: add check for delta, deltaX, deltaY, if (deltaY != 0 || delta != 0) delta = deltaY == 0 ? delta : deltaY;
-				// Check for stopPropagation if bounds aren't obtained
-				// FIXME: if scroll does occur, stopPropagation on event, otherwise allow to bubble up
-				var position;
-				if (event.deltaFactor) {
-					position = -$innerPanel.position().top + (-deltaY * event.deltaFactor);
-				} else {
-					position = ((-deltaY * this.options.wheelStep) + this.currentVerticalScrollPosition) * ($innerPanel.outerHeight() - $wrapper.outerHeight());
+	}
+// mouse end
+	if (($.isArray(this.options.events) && (this.options.events.indexOf('wheel') !== -1)) || this.options.events == 'wheel') {
+		this._on($outerPanel, {
+			'mousewheel': function(event) {
+				var deltaY = event.deltaY || event.delta || 0,
+					deltaX = event.deltaX || 0;
+				// if scroll occurs, stopPropagation of event, otherwise allow it to bubble up
+				if (deltaY !== 0) {
+					if (this.currentVerticalScrollPosition == 0) {
+						if ((deltaY < 0) && (deltaX == 0)) {
+   							event.preventDefault();
+							event.stopPropagation();
+							// preferentially, if deltaX !== 0 we'd like to kill the event entirely, blank out deltaY and retrigger the event natively
+						} else if (deltaX === 0) return;
+					} else if (this.currentVerticalScrollPosition == 1) {
+						if ((deltaY > 0) && (deltaX == 0)) {
+							event.preventDefault();
+							event.stopPropagation();
+						} else if (deltaX == 0) return;
+					}
 				}
-				this._verticalPosition(position, event);
+				if (deltaX !== 0) {
+					if (this.currentHorizontalScrollPosition == 0) {
+						if ((deltaX < 0) && (deltaY == 0)) {
+   							event.preventDefault();
+							event.stopPropagation();
+							// preferentially, if deltaX !== 0 we'd like to kill the event entirely, blank out deltaY and retrigger the event natively
+						} else if (deltaY === 0) return;
+					} else if (this.currentHorizontalScrollPosition == 1) {
+						if ((deltaX > 0) && (deltaY == 0)) {
+							event.preventDefault();
+							event.stopPropagation();
+						} else if (deltaY == 0) return;
+					}
+				}
+				var position;
+				if (deltaY !== 0) {
+					if (event.deltaFactor) {
+						position = -$innerPanel.position().top + (-deltaY * event.deltaFactor);
+					} else {
+						position = ((-deltaY * this.options.wheelStep) + this.currentVerticalScrollPosition) * ($innerPanel.outerHeight() - $wrapper.outerHeight());
+					}
+					this._verticalPosition(position, event);
+				}
+				if (deltaX !== 0) {
+					if (event.deltaFactor) {
+						position = -$innerPanel.position().left + (-deltaX * event.deltaFactor);
+					} else {
+						position = ((-deltaX * this.options.wheelStep) + this.currentHorizontalScrollPosition) * ($innerPanel.outerWidth() - $wrapper.outerWidth());
+					}
+					this._horizontalPosition(position, event);
+				}
 			}
 		});
-		// CONSIDER: whole scrollpane
-		this._on($outerPanel.find('.ui-scrollpane-scrollbar-vertical-track'), {
-			'mousewheel': function (event, delta, deltaX, deltaY) {
-				event.stopPropagation();
-				// TODO: save as regular mousewheel except force deltaX to 0
-			}
-		});
+	} // wheel events
 	if (($.isArray(this.options.events) && (this.options.events.indexOf('keyboard') !== -1)) || this.options.events == 'keyboard') {
 		if (typeof this.oldTabIndex === 'undefined') $outerPanel.attr('tabindex', -1);
 		var keyHandler = function(event) {
@@ -488,7 +523,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 		}
 
 		this._updateHorizontalArrows();
-		if (event) this._trigger('scroll', event, {'axis': 'y', 'scrollY': undefined, 'scrollX': innerPanelLeft});
+		if (event) this._trigger('scroll', event, {'axis': 'x', 'scrollY': undefined, 'scrollX': innerPanelLeft});
 	},
 	_updateVerticalArrows() {
 		var $outerPanel = this.element;
@@ -543,7 +578,6 @@ var scrollPane = $.widget('aw.scrollPane', {
 		return wrapperWidth < innerPanelWidth;
 	},
 	_update: function(outerPanelWidth, outerPanelHeight, innerPanelWidth, innerPanelHeight, wrapperWidth, wrapperHeight) {
-		// FIXME: don't user outerPanelHeight and Width but wrapperHeight and Width for view sizing calculations
 		var $outerPanel = this.element,
 			$innerPanel = this.$innerPanel,
 			$wrapper = $outerPanel.find('> .ui-scrollpane-wrapper');
@@ -571,7 +605,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 			$wrapper.css('height', wrapperHeight);
 		}
 
-		if (verticalScrollBarVisible) { //(outerPanelHeight < innerPanelHeight) {
+		if (verticalScrollBarVisible) {
 			var verticalRatio = innerPanelHeight / outerPanelHeight;
 
 			this._updateVerticalArrows();
@@ -614,15 +648,12 @@ var scrollPane = $.widget('aw.scrollPane', {
 			// update scrollbar scrollhandle
 			$outerPanel.find('.ui-scrollpane-scrollbar-horizontal-track-scrollhandle').css({'left': scrollHandleLeft, 'width': scrollHandleWidth});
 		} else {
-			if (this.horizontalScrollBarVisible) {
-				$outerPanel.find('.ui-scrollpane-scrollbar-horizontal').addClass('ui-helper-hidden');
-				this.currentHorizontalScrollPosition = 0;
-			}
+			$outerPanel.find('.ui-scrollpane-scrollbar-horizontal').addClass('ui-helper-hidden');
+			this.currentHorizontalScrollPosition = 0;
 		}
 		this.horizontalScrollBarVisible = horizontalScrollBarVisible;
 		
-		// CONSIDER: should this be wrapper instead of outerPanel?
-		$innerPanel.css({'left': Math.floor(this.currentHorizontalScrollPosition * (outerPanelWidth - innerPanelWidth)), 'top': Math.floor(this.currentVerticalScrollPosition * (outerPanelHeight - innerPanelHeight))});
+		$innerPanel.css({'left': Math.floor(this.currentHorizontalScrollPosition * (wrapperWidth - innerPanelWidth)), 'top': Math.floor(this.currentVerticalScrollPosition * (wrapperHeight - innerPanelHeight))});
 	},
 	_constrain: function(value, min, max) {
 		if (value < min) {

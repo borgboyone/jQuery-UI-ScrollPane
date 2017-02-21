@@ -80,12 +80,9 @@ The jQuery scrollParent, scrollTop and scrollLeft default functions are overridd
 ToDo
 ----
 You heard it here first folks.  Not everything is finished.
--	Mousewheel on vertical scrollbar
 -	Add touchscreen support (testing of project in actual setting)
 -	Add full visibility and always hidden support for scrollbars
 -	Add options validation
--	Verify border functionality
--	Technically box-shadow insets should be transferred but that's getting to be a little much
 -	CONSIDER: Honoring the ScrollBar position option
 -	CONSIDER: Userspace/namespace for classes (so instead of "ui-", you would have "aw-")
 -	REQUEST: Have scrollbars float over content and fade-in and/or slide-in on activity
