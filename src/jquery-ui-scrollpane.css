@@ -1,11 +1,17 @@
 .ui-helper-hidden {
 	display: none !important;
 }
+.ui-scrollpane-autowidth {
+	width: auto;
+}
 .ui-scrollpane-fullwidth {
 	width: 100%;
 }
 .ui-scrollpane-autoheight {
 	height: auto;
+}
+.ui-scrollpane-fullheight {
+	height: 100%;
 }
 .ui-scrollpane-scrollbar-vertical-track {
 	width: 100%;

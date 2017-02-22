@@ -80,12 +80,16 @@ The jQuery scrollParent, scrollTop and scrollLeft default functions are overridd
 ToDo
 ----
 You heard it here first folks.  Not everything is finished.
+-	Add special handling for body/document
+-	CONSIDER: Save scrollbars to this for code simplification
+-	CONSIDER: Separate notion of innerPaneClasses and packing basis
 -	Add touchscreen support (testing of project in actual setting)
 -	Add full visibility and always hidden support for scrollbars
 -	Add options validation
 -	CONSIDER: Honoring the ScrollBar position option
 -	CONSIDER: Userspace/namespace for classes (so instead of "ui-", you would have "aw-")
 -	REQUEST: Have scrollbars float over content and fade-in and/or slide-in on activity
+-	REQUEST: Modify the scrollSortable to allow for automatic scrolling (seems fairly easy)
 
 License
 -------
