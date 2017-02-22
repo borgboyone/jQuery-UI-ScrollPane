@@ -53,15 +53,32 @@ Ultimate No Tears (via MarcJ's [CSS Element Queries](http://marcj.github.io/css-
 	new new ResizeSensor($('#content .article .ui-scrollpane-inner').get(0), function() { $('#content .article').scrollpane('refresh'); });
 ```
 
-Padding Transfer:
+Padding Transfer (lazy method):
 ```css
 	.my-padding {
 		padding: 2px 4px 6px 8px;
 	}
+	.my-padding.ui-scrollpane {
+		padding: 0;
+	}
+	.my-padding.ui-scrollpane > .ui-scrollpane-wrapper > .ui-scrollpane-innerpane {
+		padding: 2px 4px 6px 8px;
+	}
+```
+
+Body:
+```css
+	.body-scrollpane {
+		height: 100%;
+		margin: 0;
+		overflow: hidden;
+	}
+```
+```html
+	<body class="body-scrollpane">
 ```
 ```js
-	$('#content .article').removeClass('my-padding').scrollpane({innerPaneClasses: 'my-padding'});
-	$('#content .article').scrollpane('destroy').addClass('my-padding');
+	$('body').scrollpane();
 ```
 
 Auxilliary
@@ -80,11 +97,8 @@ The jQuery scrollParent, scrollTop and scrollLeft default functions are overridd
 ToDo
 ----
 You heard it here first folks.  Not everything is finished.
--	Add special handling for body/document
--	CONSIDER: Save scrollbars to this for code simplification
 -	CONSIDER: Separate notion of innerPaneClasses and packing basis
 -	Add touchscreen support (testing of project in actual setting)
--	Add full visibility and always hidden support for scrollbars
 -	Add options validation
 -	CONSIDER: Honoring the ScrollBar position option
 -	CONSIDER: Userspace/namespace for classes (so instead of "ui-", you would have "aw-")
