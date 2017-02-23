@@ -134,3 +134,7 @@
 .ui-scrollpane-scrollbar-vertical-track-scrollhandle.ui-draggable-dragging {
 	cursor: grabbing;
 }
+.ui-scrollbar-track.ui-state-disabled {
+	background-color: #AAA;
+	border-radius: 10px;
+}

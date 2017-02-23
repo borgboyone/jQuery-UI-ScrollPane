@@ -39,6 +39,14 @@ Options
 -	`pageStep`: Percentage of viewport to scroll targeted axis if a page specific movement is initiated (eg. clicking on track area). (default: 0.9)
 -	`arrowClassIcons`: Icon classes to use for the scrollbar arrows.  (default: verticalScrollBar => {start: 'ui-icon ui-icon-triangle-1-n', end: 'ui-icon ui-icon-triangle-1-s'}, horizontalScrollBar => {start: 'ui-icon ui-icon-triangle-1-w', end: 'ui-icon ui-icon-triangle-1-e'})
 
+Methods
+-------
+-	`refresh`:
+-	`scrollTop`:
+-	`scrollLeft`:
+-	`scrollHeight`:
+-	`scrollWidth`:
+
 Usage
 -----
 Typical:
@@ -53,7 +61,7 @@ Ultimate No Tears (via MarcJ's [CSS Element Queries](http://marcj.github.io/css-
 	new new ResizeSensor($('#content .article .ui-scrollpane-inner').get(0), function() { $('#content .article').scrollpane('refresh'); });
 ```
 
-Padding Transfer (lazy method):
+Padding Transfer (lazy CSS method):
 ```css
 	.my-padding {
 		padding: 2px 4px 6px 8px;
