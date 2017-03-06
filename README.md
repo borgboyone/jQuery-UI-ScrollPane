@@ -111,7 +111,6 @@ You heard it here first folks.  Not everything is finished.
 -	CONSIDER: Honoring the ScrollBar position option
 -	CONSIDER: Userspace/namespace for classes (so instead of "ui-", you would have "aw-")
 -	REQUEST: Have scrollbars float over content and fade-in and/or slide-in on activity
--	REQUEST: Modify the scrollSortable to allow for automatic scrolling (seems fairly easy)
 
 License
 -------

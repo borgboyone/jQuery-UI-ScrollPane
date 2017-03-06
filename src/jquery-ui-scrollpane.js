@@ -11,7 +11,7 @@
 }( function( $ ) {
 
 /*!
- * jQuery UI ScrollPane 0.9.8
+ * jQuery UI ScrollPane 0.9.10
  * https://github.com/borgboyone/jQuery-UI-ScrollPane
  *
  * Copyright 2017 Anthony Wells
@@ -22,7 +22,7 @@
  */
 
 var scrollPane = $.widget('aw.scrollPane', {
-	version: '0.9.8',
+	version: '0.9.10',
 	options: {
 		maintainInitialScrollPosition: true,
 		innerPaneClasses: 'ui-scrollpane-fullwidth ui-scrollPane-autoheight',
@@ -245,7 +245,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 					scrollHandleHeight = $verticalScrollBar.find('.ui-scrollpane-scrollbar-vertical-track-scrollhandle').outerHeight(),
 					delta = ui.position.top == 0 ? 0 : (ui.position.top / (trackHeight - scrollHandleHeight));
 
-					that._verticalPosition(delta * (innerPanelHeight - wrapperHeight), event);
+					that._verticalPosition(delta * (innerPanelHeight - wrapperHeight), event, false);
 			},
 			stop: function() {
 				$outerPanel.focus();
@@ -329,7 +329,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 					scrollHandleWidth = $horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track-scrollhandle').outerWidth(),
 					delta = ui.position.left == 0 ? 0 : (ui.position.left / (trackWidth - scrollHandleWidth));
 
-					that._horizontalPosition(delta * (innerPanelWidth - wrapperWidth), event);
+					that._horizontalPosition(delta * (innerPanelWidth - wrapperWidth), event, false);
 			},
 			stop: function() {
 				$outerPanel.focus();
@@ -476,7 +476,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 		});
 	} // keyboard events
 	},
-	_verticalPosition: function(position, event) {
+	_verticalPosition: function(position, event, animate) {
 		// must have vertical scroll bar showing and active
 		if (!this.verticalScrollBarVisible || !this.verticalScrollBarNeeded) return;
 
@@ -494,18 +494,36 @@ var scrollPane = $.widget('aw.scrollPane', {
 		var $track = this.$verticalScrollBar.find('.ui-scrollpane-scrollbar-vertical-track'),
 			$scrollHandle = $track.find('.ui-scrollpane-scrollbar-vertical-track-scrollhandle');
 
-		$scrollHandle.css('top', ($track.height() - $scrollHandle.outerHeight()) * this.currentVerticalScrollPosition); // = scrollHandleTop
-
-		if (this.options.animate === true) {
-			$innerPanel.finish().animate({'top': -innerPanelTop}, 'fast');
+		// you can pass a duration of 0 to give the same behavior as no animation. This would make the code more manageable
+		// finish() is required instead of stop() for scroll arrow behavior. However, stop() is better for paging
+		if ((animate !== false) && (this.options.animate === true)) {
+			var that = this;
+			$().add($innerPanel).add($scrollHandle).finish('ui-scrollpane');
+			$().add(
+			$innerPanel.animate({'top': -innerPanelTop},  // the queue should be uniquely identified
+				{'queue': 'ui-scrollpane',
+				 'progress': function(animation, progress) {
+						// yikes! progress is called for the initial start (unless duration is 0)!
+						if (progress !== 0) {
+							if (event)
+								that._trigger('scroll', event, {'axis': 'y', 'position': $innerPanel.position()});
+						}
+					},
+				 'done': function() { that._updateVerticalArrows(); },
+				 'duration': 'fast'})
+			).add(
+			$scrollHandle.animate({'top': ($track.height() - $scrollHandle.outerHeight()) * this.currentVerticalScrollPosition}, 
+				{'queue': 'ui-scrollpane', 'duration': 'fast'})
+			).dequeue('ui-scrollpane');
 		} else {
-			$innerPanel.css('top', -innerPanelTop);
-		}
+			$scrollHandle.css('top', ($track.height() - $scrollHandle.outerHeight()) * this.currentVerticalScrollPosition); // = scrollHandleTop
+			$innerPanel.css('top', -innerPanelTop);  // CONSIDER: use scrollTop function of element instead (may interfere with animation though)
 
-		this._updateVerticalArrows();
-		if (event) this._trigger('scroll', event, {'axis': 'y', 'scrollY': innerPanelTop, 'scrollX': undefined});
+			this._updateVerticalArrows();
+			if (event) this._trigger('scroll', event, {'axis': 'y', 'position': $innerPanel.position()});
+		}
 	},
-	_horizontalPosition: function(position, event) {
+	_horizontalPosition: function(position, event, animate) {
 		// must have horizontal scroll bar showing and active
 		if (!this.horizontalScrollBarVisible || !this.horizontalScrollBarNeeded) return;
 
@@ -523,16 +541,31 @@ var scrollPane = $.widget('aw.scrollPane', {
 		var $track = this.$horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track'),
 			$scrollHandle = $track.find('.ui-scrollpane-scrollbar-horizontal-track-scrollhandle');
 
-		$scrollHandle.css('left', ($track.width() - $scrollHandle.outerWidth()) * this.currentHorizontalScrollPosition); // = scrollHandleLeft
-
-		if (this.options.animate === true) {
-			$innerPanel.finish().animate({'left': -innerPanelLeft}, 'fast');
+		if ((animate !== false) && (this.options.animate === true)) {
+			var that = this;
+			$().add($innerPanel).add($scrollHandle).finish('ui-scrollpane');
+			$().add(
+			$innerPanel.animate({'left': -innerPanelLeft},
+				{'queue': 'ui-scrollpane',
+				 'progress': function(animation, progress) {
+					 	if (progress !== 0) {
+							if (event)
+								this._trigger('scroll', event, {'axis': 'x', 'position': $innerPanel.position()});
+					 	}
+				 	},
+				 'done': function() { that._updateHorizontalArrows(); },
+				 'duration': 'fast'})
+			).add(
+			$scrollHandle.animate({'left': ($track.width() - $scrollHandle.outerWidth()) * this.currentHorizontalScrollPosition},
+			 {'queue': 'ui-scrollpane', 'duration': 'fast'})
+			).dequeue('ui-scrollpane');
 		} else {
-			$innerPanel.css('left', -innerPanelLeft);
-		}
+			$scrollHandle.css('left', ($track.width() - $scrollHandle.outerWidth()) * this.currentHorizontalScrollPosition); // = scrollHandleLeft
+			$innerPanel.css('left', -innerPanelLeft); // CONSIDER: use scrollLeft function of element instead (interferes with animation though)
 
-		this._updateHorizontalArrows();
-		if (event) this._trigger('scroll', event, {'axis': 'x', 'scrollY': undefined, 'scrollX': innerPanelLeft});
+			this._updateHorizontalArrows();
+			if (event) this._trigger('scroll', event, {'axis': 'x', 'position': $innerPanel.position()});
+		}
 	},
 	_updateVerticalArrows() {
 		var $verticalScrollBar = this.$verticalScrollBar;
@@ -883,46 +916,63 @@ var scrollPane = $.widget('aw.scrollPane', {
 
 	if ($.aw.scrollSortable) {
 		$.widget( "aw.scrollSortable", $.aw.scrollSortable, {
-			_scroll: function( event ) {
+			_scroll: function( event, direction ) {
 				var o = this.options,
-					scrolled = false;
+					scrolled = { top: 0, left: 0 };
 
 				if ( this.scrollParent[ 0 ] !== this.document[ 0 ] &&
 						this.scrollParent[ 0 ].tagName !== "HTML" ) {
 
-					if ( ( this.overflowOffset.top + this.scrollParent.outerHeight() ) -
-							event.pageY < o.scrollSensitivity ) {
-						scrolled = this.scrollParent.scrollTop(this.scrollParent.scrollTop() + o.scrollSpeed);
-					} else if ( event.pageY - this.overflowOffset.top < o.scrollSensitivity ) {
-						scrolled = this.scrollParent.scrollTop(this.scrollParent.scrollTop() - o.scrollSpeed);
+					if ( ( ( this.overflowOffset.top + this.scrollParent.outerHeight() ) -
+							event.pageY < o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.vertical === 'down' ) ) ) {
+						scrolled.top = this.scrollParent.scrollTop();
+						this.scrollParent.scrollTop(scrolled.top + o.scrollSpeed);
+						scrolled.top -= this.scrollParent.scrollTop();
+					} else if ( ( event.pageY - this.overflowOffset.top < o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.vertical === 'up' ) ) ) {
+						scrolled.top = this.scrollParent.scrollTop();
+						this.scrollParent.scrollTop(scrolled.top - o.scrollSpeed);
+						scrolled.top += -this.scrollParent.scrollTop();
 					}
 
-					if ( ( this.overflowOffset.left + this.scrollParent.outerWidth() ) -
-							event.pageX < o.scrollSensitivity ) {
-						scrolled = this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() + o.scrollSpeed);
-					} else if ( event.pageX - this.overflowOffset.left < o.scrollSensitivity ) {
-						scrolled = this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() - o.scrollSpeed);
+					if ( ( ( this.overflowOffset.left + this.scrollParent.outerWidth() ) -
+							event.pageX < o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.horizontal === 'right' ) ) ) {
+						scrolled.left = this.scrollParent.scrollLeft();
+						this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() + o.scrollSpeed);
+						scrolled.left -= this.scrollParent.scrollLeft();
+					} else if ( ( event.pageX - this.overflowOffset.left < o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.horizontal === 'left' ) ) ) {
+						scrolled.left = this.scrollParent.scrollLeft();
+						this.scrollParent.scrollLeft(this.scrollParent.scrollLeft() - o.scrollSpeed);
+						scrolled.left += -this.scrollParent.scrollLeft();
 					}
 
 				} else {
 
-					if ( event.pageY - this.document.scrollTop() < o.scrollSensitivity ) {
-						scrolled = this.document.scrollTop( this.document.scrollTop() - o.scrollSpeed );
-					} else if ( this.window.height() - ( event.pageY - this.document.scrollTop() ) <
-							o.scrollSensitivity ) {
-						scrolled = this.document.scrollTop( this.document.scrollTop() + o.scrollSpeed );
+					if ( ( event.pageY - this.document.scrollTop() < o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.vertical === 'up' ) ) ) {
+						scrolled.top = this.document.scrollTop();
+						this.document.scrollTop( scrolled.top - o.scrollSpeed );
+						scrolled.top += -this.document.scrollTop();
+					} else if ( ( this.window.height() - ( event.pageY - this.document.scrollTop() ) <
+							o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.vertical === 'down' ) ) ) {
+						scrolled.top = this.document.scrollTop();
+						this.document.scrollTop( scrolled.top + o.scrollSpeed );
+						scrolled.top -= this.document.scrollTop();
 					}
 
-					if ( event.pageX - this.document.scrollLeft() < o.scrollSensitivity ) {
-						scrolled = this.document.scrollLeft( this.document.scrollLeft() - o.scrollSpeed );
-					} else if ( this.window.width() - ( event.pageX - this.document.scrollLeft() ) <
-							o.scrollSensitivity ) {
-						scrolled = this.document.scrollLeft( this.document.scrollLeft() + o.scrollSpeed );
+					if ( ( event.pageX - this.document.scrollLeft() < o.scrollSensitivity ) && ( ( typeof direction === 'undefined' ) || ( direction.horizontal === 'left' ) ) ) {
+						scrolled.left = this.document.scrollLeft();
+						this.document.scrollLeft( scrolled.left - o.scrollSpeed );
+						scrolled.left += -this.document.scrollLeft();
+					} else if ( ( this.window.width() - ( event.pageX - this.document.scrollLeft() ) <
+							o.scrollSensitivity ) && ( ( typeof direction === 'undefined') || ( direction.horizontal === 'right' ) ) ) {
+						scrolled.left = this.document.scrollLeft();
+						this.document.scrollLeft( scrolled.left + o.scrollSpeed );
+						scrolled.left -= this.document.scrollLeft();
 					}
 
 				}
 
-				return scrolled;
+				return scrolled === false ||
+					( ( scrolled.left === 0 ) && ( scrolled.top === 0 ) ) ? false : scrolled;
 			}
 		});
 	}

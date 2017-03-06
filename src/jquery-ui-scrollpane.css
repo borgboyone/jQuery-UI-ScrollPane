@@ -130,9 +130,11 @@
 	border-radius: 10px;
 	box-shadow: inset -4px -4px 8px -6px #666, inset 4px 4px 8px -5px #FFF;
 	cursor: grab;
+	cursor: -webkit-grab;
 }
 .ui-scrollpane-scrollbar-vertical-track-scrollhandle.ui-draggable-dragging {
 	cursor: grabbing;
+	cursor: -webkit-grabbing;
 }
 .ui-scrollbar-track.ui-state-disabled {
 	background-color: #AAA;
