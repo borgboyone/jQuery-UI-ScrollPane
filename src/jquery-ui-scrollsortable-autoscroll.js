@@ -178,7 +178,8 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 	_mouseStart: function( event, overrideHandle, noActivation ) {
 
 		var i, body,
-			o = this.options;
+			o = this.options,
+			temp = this.currentItem.scrollParent().scrollTop();
 
 		this.currentContainer = this;
 
@@ -249,6 +250,7 @@ return $.widget( "aw.scrollSortable", $.ui.mouse, {
 
 		//Get the next scrolling parent
 		this.scrollParent = this.placeholder.scrollParent();
+		this.scrollParent.scrollTop(temp);
 
 		$.extend( this.offset, {
 			parent: this._getParentOffset()

@@ -11,7 +11,7 @@
 }( function( $ ) {
 
 /*!
- * jQuery UI ScrollPane 0.9.10
+ * jQuery UI ScrollPane 1.0.0
  * https://github.com/borgboyone/jQuery-UI-ScrollPane
  *
  * Copyright 2017 Anthony Wells
@@ -22,7 +22,7 @@
  */
 
 var scrollPane = $.widget('aw.scrollPane', {
-	version: '0.9.10',
+	version: '1.0.0',
 	options: {
 		maintainInitialScrollPosition: true,
 		innerPaneClasses: 'ui-scrollpane-fullwidth ui-scrollPane-autoheight',
@@ -74,7 +74,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 		this.oldTabIndex = $outerPanel.attr('tabindex');
 
 		$outerPanel
-			.wrapInner('<div class="ui-scrollpane-wrapper" style="position: absolute; overflow: hidden; width: ' + this.outerPanelWidth + 'px; height: ' + this.outerPanelHeight + 'px;"><div class="ui-scrollpane-inner ui-scrollable-area ' + this.options.innerPaneClasses + '" style="position: absolute;">')
+			.wrapInner('<div class="ui-scrollpane-wrapper" style="position: absolute; overflow: hidden; width: ' + this.outerPanelWidth + 'px; height: ' + this.outerPanelHeight + 'px;"><div class="ui-scrollpane-inner ui-scrollable-area ' + this.options.innerPaneClasses + '">')
 			.append('<div class="ui-scrollpane-scrollbar ui-scrollpane-scrollbar-vertical ui-scrollbar ' + (this.options.verticalScrollBar.arrowAlignment == 'start' ? 'ui-scrollbar-arrows-start' : (this.options.verticalScrollBar.arrowAlignment == 'end' ? 'ui-scrollbar-arrows-end' : 'ui-scrollbar-arrows-ends')) + ' ui-scrollbar-vertical ui-helper-hidden ui-state-disabled" style="position: absolute;">' +
 				'<div class="ui-scrollpane-scrollbar-vertical-arrow-up ui-scrollbar-arrow ui-scrollbar-arrow-start' + (this.options.verticalScrollBar.showArrows == 'visible' ? '' : ' ui-helper-hidden') + ' ui-state-disabled"><span class="' + this.options.verticalScrollBar.arrowClassIcons['start'] + '"></span></div>' +
 				'<div class="ui-scrollpane-scrollbar-vertical-track ui-scrollbar-track ui-state-disabled"><div class="ui-scrollpane-scrollbar-vertical-track-scrollhandle ui-scrollbar-track-scrollhandle"></div></div>' +
@@ -88,8 +88,8 @@ var scrollPane = $.widget('aw.scrollPane', {
 			.data('ui-scrollable', this);
 
 		var $innerPanel = this.$innerPanel = $outerPanel.find('> .ui-scrollpane-wrapper > .ui-scrollpane-inner'),
-			innerPanelWidth = $innerPanel.outerWidth(),
-			innerPanelHeight = $innerPanel.outerHeight();
+			innerPanelWidth = $outerPanel.find('> .ui-scrollpane-wrapper').get(0).scrollWidth,
+			innerPanelHeight = $outerPanel.find('> .ui-scrollpane-wrapper').get(0).scrollHeight;
 
 		if (this.options.maintainInitialScrollPosition === true) {
 			var temp;
@@ -140,6 +140,12 @@ var scrollPane = $.widget('aw.scrollPane', {
 			that = this;
 // mouse start
 	if (($.isArray(this.options.events) && (this.options.events.indexOf('mouse') !== -1)) || this.options.events == 'mouse') {
+		this._on($wrapper, {
+			click: function(event) {
+				event.stopPropagation();
+				$outerPanel.focus();
+			}
+		});
 		this._on($verticalScrollBar.find('.ui-scrollpane-scrollbar-vertical-track-scrollhandle').add($horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track-scrollhandle')), {
 			click: function(event) {
 				event.preventDefault();
@@ -158,7 +164,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 					delta = -delta;
 				}
 
-				this._verticalPosition(-$innerPanel.position().top + delta, event);
+				this._verticalPosition($wrapper.get(0).scrollTop + delta, event);
 			}
 		});
 		var mouseDownTimer = null,
@@ -171,7 +177,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 					delta = -delta;
 				}
 
-				that._verticalPosition(-$innerPanel.position().top + delta, event);
+				that._verticalPosition($wrapperPanel.get(0).scrollTop + delta, event);
 			},
 			horizontalScrollBarArrowHandler = function(event) {
 				var wrapperWidth = $wrapper.outerWidth(),
@@ -181,7 +187,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 					delta = -delta;
 				}
 
-				that._horizontalPosition(-$innerPanel.position().left + delta, event);
+				that._horizontalPosition($wrapperPanel.get().scrollLeft + delta, event);
 			};
 		if (this.options.verticalScrollBar.showArrows == 'visible') {
 			this._on($verticalScrollBar.find('.ui-scrollbar-arrow'), {
@@ -240,7 +246,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 			containment: $verticalScrollBar.find('.ui-scrollpane-scrollbar-vertical-track'),
 			drag: function(event, ui) {
 				var wrapperHeight = $wrapper.outerHeight(),
-					innerPanelHeight = $innerPanel.outerHeight(),
+					innerPanelHeight = $wrapper.get(0).scrollHeight,
 					trackHeight = $verticalScrollBar.find('.ui-scrollpane-scrollbar-vertical-track').height(),
 					scrollHandleHeight = $verticalScrollBar.find('.ui-scrollpane-scrollbar-vertical-track-scrollhandle').outerHeight(),
 					delta = ui.position.top == 0 ? 0 : (ui.position.top / (trackHeight - scrollHandleHeight));
@@ -256,15 +262,14 @@ var scrollPane = $.widget('aw.scrollPane', {
 				event.preventDefault();
 				event.stopPropagation();
 				var wrapperWidth = $wrapper.outerWidth(),
-					delta = wrapperWidth * this.options.horizontalScrollBar.pageStep,
-					$innerPanel = $outerPanel.find('> .ui-scrollpane-wrapper > .ui-scrollpane-inner');
+					delta = wrapperWidth * this.options.horizontalScrollBar.pageStep;
 
 				// CONSIDER: safety bounds check event.outsetX should stopPropagation not work
 				if (!(event.offsetX > $horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track-scrollhandle').position().left)) {
 					delta = -delta;
 				}
 
-				this._horizontalPosition(-$innerPanel.position().left + delta, event);
+				this._horizontalPosition($wrapper.get(0).scrollLeft + delta, event);
 			}
 		});
 		if (this.options.horizontalScrollBar.showArrows == 'visible') {
@@ -324,7 +329,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 			containment: $horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track'),
 			drag: function(event, ui) {
 				var wrapperWidth = $wrapper.outerWidth(),
-					innerPanelHeight = $innerPanel.outerHeight(),
+					innerPanelWidth = $wrapper.get(0).scrollWidth,
 					trackWidth = $horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track').width(),
 					scrollHandleWidth = $horizontalScrollBar.find('.ui-scrollpane-scrollbar-horizontal-track-scrollhandle').outerWidth(),
 					delta = ui.position.left == 0 ? 0 : (ui.position.left / (trackWidth - scrollHandleWidth));
@@ -376,17 +381,17 @@ var scrollPane = $.widget('aw.scrollPane', {
 				var position;
 				if (deltaY !== 0) {
 					if (event.deltaFactor) {
-						position = -$innerPanel.position().top + (-deltaY * event.deltaFactor);
+						position = $wrapper.get(0).scrollTop + (-deltaY * event.deltaFactor);
 					} else {
-						position = ((-deltaY * this.options.wheelStep) + this.currentVerticalScrollPosition) * ($innerPanel.outerHeight() - $wrapper.outerHeight());
+						position = ((-deltaY * this.options.wheelStep) + this.currentVerticalScrollPosition) * ($wrapper.get(0).scrollHeight - $wrapper.outerHeight());
 					}
 					this._verticalPosition(position, event);
 				}
 				if (deltaX !== 0) {
 					if (event.deltaFactor) {
-						position = -$innerPanel.position().left + (-deltaX * event.deltaFactor);
+						position = $wrapper.get(0).scrollLeft + (-deltaX * event.deltaFactor);
 					} else {
-						position = ((-deltaX * this.options.wheelStep) + this.currentHorizontalScrollPosition) * ($innerPanel.outerWidth() - $wrapper.outerWidth());
+						position = ((-deltaX * this.options.wheelStep) + this.currentHorizontalScrollPosition) * ($wrapper.get(0).scrollWidth - $wrapper.outerWidth());
 					}
 					this._horizontalPosition(position, event);
 				}
@@ -402,7 +407,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						if (this.currentVerticalScrollPosition !== 1) {
 							var wrapperHeight = $wrapper.outerHeight(),
 								delta = wrapperHeight * this.options.verticalScrollBar.pageStep;
-							this._verticalPosition(-$innerPanel.position().top + delta, event);
+							this._verticalPosition($wrapper.get(0).scrollTop + delta, event);
 							return true;
 						}
 						break;
@@ -410,7 +415,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						if (this.currentVerticalScrollPosition !== 1) {
 							var wrapperHeight = $wrapper.outerHeight(),
 								delta = wrapperHeight * that.options.verticalScrollBar.arrowStep;
-							this._verticalPosition(-$innerPanel.position().top + delta, event);
+							this._verticalPosition($wrapper.get(0).scrollTop + delta, event);
 							return true;
 						}
 						break;
@@ -418,7 +423,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						if (this.currentVerticalScrollPosition !== 0) {
 							var wrapperHeight = $wrapper.outerHeight(),
 								delta = wrapperHeight * that.options.verticalScrollBar.arrowStep;
-							this._verticalPosition(-$innerPanel.position().top - delta, event);
+							this._verticalPosition($wrapper.get(0).scrollTop - delta, event);
 							return true;
 						}
 						break;
@@ -426,7 +431,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						if (this.currentVerticalScrollPosition !== 0) {
 							var wrapperHeight = $wrapper.outerHeight(),
 								delta = wrapperHeight * this.options.verticalScrollBar.pageStep;
-							this._verticalPosition(-$innerPanel.position().top - delta, event);
+							this._verticalPosition($wrapper.get(0).scrollTop - delta, event);
 							return true;
 						}
 						break;
@@ -438,7 +443,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						break;
 					case $.ui.keyCode.END:
 						if (this.currentVerticalScrollPosition !== 1) {
-							this._verticalPosition($innerPanel.outerHeight() - $wrapper.height(), event);
+							this._verticalPosition($wrapper.get(0).scrollHeight, event);
 							return true;
 						}
 						break;
@@ -450,7 +455,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						if (this.currentHorizontalScrollPosition !== 0) {
 							var wrapperWidth = $wrapper.outerWidth(),
 								delta = wrapperWidth * that.options.horizontalScrollBar.arrowStep;
-							this._horizontalPosition(-$innerPanel.position().left - delta, event);
+							this._horizontalPosition($wrapper.get(0).scrollLeft - delta, event);
 							return true;
 						}
 						break;
@@ -458,7 +463,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 						if (this.currentHorizontalScrollPosition !== 1) {
 							var wrapperWidth = $wrapper.outerWidth(),
 								delta = wrapperWidth * that.options.horizontalScrollBar.arrowStep;
-							this._horizontalPosition(-$innerPanel.position().left + delta, event);
+							this._horizontalPosition($wrapper.get(0).scrollLeft + delta, event);
 							return true;
 						}
 						break;
@@ -481,13 +486,13 @@ var scrollPane = $.widget('aw.scrollPane', {
 		if (!this.verticalScrollBarVisible || !this.verticalScrollBarNeeded) return;
 
 		var $outerPanel = this.element,
-			wrapperHeight = $outerPanel.find('> .ui-scrollpane-wrapper').outerHeight(),
-			$innerPanel = this.$innerPanel,
-			innerPanelHeight = $innerPanel.outerHeight(),
+			$wrapper = $outerPanel.find('> .ui-scrollpane-wrapper'),
+			wrapperHeight = $wrapper.outerHeight(),
+			innerPanelHeight = $wrapper.get(0).scrollHeight,
 			innerPanelTop = this._constrain(position, 0, innerPanelHeight - wrapperHeight); // this can problaby be merged with this.cvsp below; should not be called innerPanelTop but reflect incoming value
 
 		// if innerPanelTop is not changed then exit
-		if (innerPanelTop == -$innerPanel.position().top) return;
+		if (innerPanelTop == $wrapper.get(0).scrollTop) return;
 
 		this.currentVerticalScrollPosition = innerPanelTop == 0 ? 0 : innerPanelTop / (innerPanelHeight - wrapperHeight);
 
@@ -498,15 +503,15 @@ var scrollPane = $.widget('aw.scrollPane', {
 		// finish() is required instead of stop() for scroll arrow behavior. However, stop() is better for paging
 		if ((animate !== false) && (this.options.animate === true)) {
 			var that = this;
-			$().add($innerPanel).add($scrollHandle).finish('ui-scrollpane');
+			$().add($wrapper).add($scrollHandle).finish('ui-scrollpane');
 			$().add(
-			$innerPanel.animate({'top': -innerPanelTop},  // the queue should be uniquely identified
+			$wrapper.animate({'scrollTop': innerPanelTop},  // the queue should be uniquely identified
 				{'queue': 'ui-scrollpane',
 				 'progress': function(animation, progress) {
 						// yikes! progress is called for the initial start (unless duration is 0)!
 						if (progress !== 0) {
 							if (event)
-								that._trigger('scroll', event, {'axis': 'y', 'position': $innerPanel.position()});
+								that._trigger('scroll', event, {'axis': 'y', 'scrollPosition': $wrapper.scrollPosition()});
 						}
 					},
 				 'done': function() { that._updateVerticalArrows(); },
@@ -517,10 +522,10 @@ var scrollPane = $.widget('aw.scrollPane', {
 			).dequeue('ui-scrollpane');
 		} else {
 			$scrollHandle.css('top', ($track.height() - $scrollHandle.outerHeight()) * this.currentVerticalScrollPosition); // = scrollHandleTop
-			$innerPanel.css('top', -innerPanelTop);  // CONSIDER: use scrollTop function of element instead (may interfere with animation though)
+			$wrapper.get(0).scrollTop = innerPanelTop;
 
 			this._updateVerticalArrows();
-			if (event) this._trigger('scroll', event, {'axis': 'y', 'position': $innerPanel.position()});
+			if (event) this._trigger('scroll', event, {'axis': 'y', 'scrollPosition': $wrapper.scrollPosition()});
 		}
 	},
 	_horizontalPosition: function(position, event, animate) {
@@ -528,13 +533,13 @@ var scrollPane = $.widget('aw.scrollPane', {
 		if (!this.horizontalScrollBarVisible || !this.horizontalScrollBarNeeded) return;
 
 		var $outerPanel = this.element,
-			wrapperWidth = $outerPanel.find('> .ui-scrollpane-wrapper').outerWidth(),
-			$innerPanel = this.$innerPanel,
-			innerPanelWidth = $innerPanel.outerWidth(),
+			$wrapper = $outerPanel.find('> .ui-scrollpane-wrapper'),
+			wrapperWidth = $wrapper.outerWidth(),
+			innerPanelWidth = $wrapper.get(0).scrollWidth,
 			innerPanelLeft = this._constrain(position, 0, innerPanelWidth - wrapperWidth);
 
 		// if innerPanelLeft is not changed then exit
-		if (innerPanelLeft == -$innerPanel.position().left) return;
+		if (innerPanelLeft == $wrapper.get(0).scrollLeft) return;
 
 		this.currentHorizontalScrollPosition = innerPanelLeft == 0 ? 0 : innerPanelLeft / (innerPanelWidth - wrapperWidth);
 
@@ -543,14 +548,14 @@ var scrollPane = $.widget('aw.scrollPane', {
 
 		if ((animate !== false) && (this.options.animate === true)) {
 			var that = this;
-			$().add($innerPanel).add($scrollHandle).finish('ui-scrollpane');
+			$().add($wrapper).add($scrollHandle).finish('ui-scrollpane');
 			$().add(
-			$innerPanel.animate({'left': -innerPanelLeft},
+			$wrapper.animate({'scrollLeft': innerPanelLeft},
 				{'queue': 'ui-scrollpane',
 				 'progress': function(animation, progress) {
 					 	if (progress !== 0) {
 							if (event)
-								this._trigger('scroll', event, {'axis': 'x', 'position': $innerPanel.position()});
+								that._trigger('scroll', event, {'axis': 'x', 'scrollPosition': $wrapper.scrollPosition()});
 					 	}
 				 	},
 				 'done': function() { that._updateHorizontalArrows(); },
@@ -561,10 +566,10 @@ var scrollPane = $.widget('aw.scrollPane', {
 			).dequeue('ui-scrollpane');
 		} else {
 			$scrollHandle.css('left', ($track.width() - $scrollHandle.outerWidth()) * this.currentHorizontalScrollPosition); // = scrollHandleLeft
-			$innerPanel.css('left', -innerPanelLeft); // CONSIDER: use scrollLeft function of element instead (interferes with animation though)
+			$wrapper.get(0).scrollLeft = innerPanelLeft;
 
 			this._updateHorizontalArrows();
-			if (event) this._trigger('scroll', event, {'axis': 'x', 'position': $innerPanel.position()});
+			if (event) this._trigger('scroll', event, {'axis': 'x', 'scrollPosition': $wrapper.scrollPosition()});
 		}
 	},
 	_updateVerticalArrows() {
@@ -588,22 +593,24 @@ var scrollPane = $.widget('aw.scrollPane', {
 			outerPanelWidth = $outerPanel.width(), // this is inner width
 			outerPanelHeight = $outerPanel.height(), // this is inner height
 			outerChanged = (this.outerPanelWidth !== outerPanelWidth) || (this.outerPanelHeight !== outerPanelHeight),
-			$innerPanel = this.$innerPanel,
+			$wrapper = $outerPanel.find('> .ui-scrollpane-wrapper'),
+			wrapperWidth = $wrapper.outerWidth(), // outerWidth should equal innerWidth otherwise there is a CSS issue
+			wrapperHeight = $wrapper.outerHeight(), // outerHeight should equal innerHeight otherwise there is a CSS issue
 			innerPanelWidth,
 			innerPanelHeight,
 			innerChanged;
 
 		if (outerChanged) {
 			// update wrapper size first
-			var wrapperWidth = outerPanelWidth - (this.verticalScrollBarVisible ? $outerPanel.find('> .ui-scrollpane-scrollbar-vertical').outerWidth() : 0),
-				wrapperHeight = outerPanelHeight - (this.horizontalScrollBarVisible ? $outerPanel.find('> .ui-scrollpane-scrollbar-horizontal').outerHeight() : 0);
-			$outerPanel.find('> .ui-scrollpane-wrapper').css({'width': wrapperWidth, 'height': wrapperHeight});
+			wrapperWidth = outerPanelWidth - (this.verticalScrollBarVisible ? $outerPanel.find('> .ui-scrollpane-scrollbar-vertical').outerWidth() : 0);
+			wrapperHeight = outerPanelHeight - (this.horizontalScrollBarVisible ? $outerPanel.find('> .ui-scrollpane-scrollbar-horizontal').outerHeight() : 0);
+			$wrapper.css({'width': wrapperWidth, 'height': wrapperHeight});
 			// CONSIDER: might have to create an immediate delay function to call the rest of this to ensure propagation of the width and height change on the wrapper
 		}
 
 		// get innerPanel sizes after updating wrapper
-		innerPanelWidth = $innerPanel.outerWidth(),
-		innerPanelHeight = $innerPanel.outerHeight(),
+		innerPanelWidth = $wrapper.get(0).scrollWidth,
+		innerPanelHeight = $wrapper.get(0).scrollHeight,
 		innerChanged = (this.innerPanelWidth !== innerPanelWidth) || (this.innerPanelHeight !== innerPanelHeight);
 		if (outerChanged || innerChanged) {
 			// save changed values (outerPanel here) or potentially do it in _update with innerPanel
@@ -613,7 +620,7 @@ var scrollPane = $.widget('aw.scrollPane', {
 		}
 	},
 	_isNeededVerticalScrollBar: function(outerPanelWidth, outerPanelHeight, innerPanelWidth, innerPanelHeight, wrapperWidth, wrapperHeight) {
-		return outerPanelHeight - (outerPanelWidth < innerPanelWidth ? this._horizontalScrollBarHeight : 0) < innerPanelHeight;
+		return outerPanelHeight - (outerPanelWidth < innerPanelWidth ? this._horizontalScrollBarHeight() : 0) < innerPanelHeight;
 	},
 	_isNeededHorizontalScrollBar: function(outerPanelWidth, outerPanelHeight, innerPanelWidth, innerPanelHeight, wrapperWidth, wrapperHeight) {
 		// secondary to _isNeededVerticalScrollBar
@@ -646,8 +653,8 @@ var scrollPane = $.widget('aw.scrollPane', {
 		if (verticalScrollBarVisible !== this.verticalScrollBarVisible) {
 			wrapperWidth = outerPanelWidth - (verticalScrollBarVisible ? this._verticalScrollBarWidth() : 0);
 			$wrapper.css('width', wrapperWidth);
-			innerPanelWidth = $innerPanel.outerWidth();
-			innerPanelHeight = $innerPanel.outerHeight();
+			innerPanelWidth = $wrapper.get(0).scrollWidth;
+			innerPanelHeight = $wrapper.get(0).scrollHeight;
 		}
 
 		// save changed values (innerPanel here)
@@ -763,7 +770,9 @@ var scrollPane = $.widget('aw.scrollPane', {
 		}
 		this.horizontalScrollBarVisible = horizontalScrollBarVisible; this.horizontalScrollBarNeeded = horizontalScrollBarNeeded;
 
-		$innerPanel.css({'left': Math.floor(this.currentHorizontalScrollPosition * (wrapperWidth - innerPanelWidth)), 'top': Math.floor(this.currentVerticalScrollPosition * (wrapperHeight - innerPanelHeight))});
+		$wrapper.get(0).scrollTop = Math.floor(this.currentVerticalScrollPosition * (wrapperHeight - innerPanelHeight));
+		$wrapper.get(0).scrollLeft = Math.floor(this.currentHorizontalScrollPosition * (wrapperWidth - innerPanelWidth));
+		//$innerPanel.css({'left': Math.floor(this.currentHorizontalScrollPosition * (wrapperWidth - innerPanelWidth)), 'top': Math.floor(this.currentVerticalScrollPosition * (wrapperHeight - innerPanelHeight))});
 	},
 	_constrain: function(value, min, max) {
 		if (value < min) {
@@ -784,22 +793,22 @@ var scrollPane = $.widget('aw.scrollPane', {
 		this._super();
 	},
 
-	/** scrollable related function **/
+	/** scrollable related functions **/
 	inScrollableArea: function(element) {
-		return this.element.find('.ui-scrollable-area').has(element).length > 0;
+		return this.element.find('> * > .ui-scrollable-area').has(element).length > 0;
 	},
 	scrollTop: function(value) {
 		if (typeof value === 'undefined') {
-			return -this.element.find('.ui-scrollable-area').position().top;
+			return this.element.find('> .ui-scrollpane-wrapper').get(0).scrollTop;
 		} else {
-			this._verticalPosition(value);
+			this._verticalPosition(value, null, false);
 		}
 	},
 	scrollLeft: function(value) {
 		if (typeof value === 'undefined') {
-			return -this.element.find('.ui-scrollable-area').position().left;
+			return this.element.find('> .ui-scrollpane-wrapper').get(0).scrollLeft;
 		} else {
-			this._horizontalPosition(value);
+			this._horizontalPosition(value, null, false);
 		}
 	},
 	scrollHeight: function() {
@@ -908,6 +917,11 @@ var scrollPane = $.widget('aw.scrollPane', {
 		scrollWidth: function() {},
 		scrollHeight: function() {}
 	});
+
+	$.fn.scrollPosition = function() {
+		var $this = $(this).first();
+		return {left: $this.scrollLeft(), top: $this.scrollTop()};
+	}
 
 	/* Allow scrollPane to function as a native replacement for the scrollSortable widget
 	   by switching all scroll related functions from using their DOM properties to using
